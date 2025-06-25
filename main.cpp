@@ -471,7 +471,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             break;
         //Podnoszenie towaru enterem, sprawdzanie, czy już istnieje podniesiony przedmiot, czy jakiś przycisk od podnoszenia konkretnego kształu jest wciśnięty i czy ma odpowiednią wage, przesunięcie towaru do końca linki
         case VK_RETURN:
-            if(!podniesiony&&(czyJestTowar(lina.wspx,lina.wspy+lina.dlugosc)||czyJestTowar(lina.wspx,lina.wspy+lina.dlugosc)||czyJestTowar(lina.wspx,lina.wspy+lina.dlugosc)))
+            if(!podniesiony&&czyJestTowar(lina.wspx,lina.wspy+lina.dlugosc))
             {
                 if(IsDlgButtonChecked(hwnd, 4) == BST_UNCHECKED&&IsDlgButtonChecked(hwnd, 5) == BST_UNCHECKED&&IsDlgButtonChecked(hwnd, 6) == BST_UNCHECKED)
                 {
