@@ -14,11 +14,11 @@
 #include <vector>
 #include <string>
 
-//Przestzrenie nazw
+//Przestrzenie nazw
 using namespace Gdiplus;
 using namespace std;
 
-//Przyciski (3 do generowania kształtów i 3 do podnoszenia tylko danego kształtu)
+//Przyciski (3 do generowania kształtów i 3 do podnoszenia tylko danego kształtu), pole do wpisania wagi i reset towarów
 HWND PrzyciskKolo;
 HWND PrzyciskTrojkat;
 HWND PrzyciskKwadrat;
@@ -26,8 +26,9 @@ HWND TylkoKwadrat;
 HWND TylkoTrojkat;
 HWND TylkoKolo;
 HWND Waga;
+HWND Reset;
 
-int MaxWaga = 10;
+int MaxWaga = 10; //Maksymalna waga, którą może unieść dźwig
 
 //klasa towarów, mają współrzędne, wagę, kształt (chyba się nie przyda) konstruktor i metody, każda rysuje konkretny kształt
 class Towary
@@ -209,6 +210,7 @@ int WINAPI WinMain (HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpsz
     TylkoTrojkat = CreateWindow( "BUTTON", "Wieza tylko z trojkatow",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 420, 30, 300, 30, hwnd, (HMENU)5, hThisInstance, NULL);
     TylkoKwadrat = CreateWindow( "BUTTON", "Wieza tylko z kwadratow",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 730, 30, 300, 30, hwnd, (HMENU)6, hThisInstance, NULL);
     Waga = CreateWindowEx(0, "EDIT", "Waga (usun i wpisz)", WS_CHILD | WS_VISIBLE | WS_BORDER, 900, 350, 150, 30, hwnd, (HMENU)7, hThisInstance, NULL);
+    Reset = CreateWindowEx( 0, "BUTTON", "Resetuj", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 900, 400, 150, 30, hwnd, (HMENU)8, hThisInstance, NULL );
 
 
     while (GetMessage (&messages, NULL, 0, 0))
@@ -344,7 +346,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         //Instrukcje po naciśnięciu przycisków
         switch (LOWORD(wParam))
         {
-        //Dodawanie kształtów i sprawdzanie, czy kształt może być dodany
+        //Dodawanie kształtów, przypisywanie im wagi i sprawdzanie, czy kształt może być dodany
         case 1:
         {
             char napis[6];
@@ -427,6 +429,12 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
             kwadraty.clear();
             InvalidateRect(hwnd, NULL, TRUE);
             break;
+        case 8:
+            kola.clear();
+            trojkaty.clear();
+            kwadraty.clear();
+            InvalidateRect(hwnd, NULL, TRUE);
+            break;
         }
         break;
 
@@ -462,7 +470,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                 if(podniesiony) podniesiony->wspy = podniesiony->wspy+5;
             }
             break;
-        //Podnoszenie towaru enterem, sprawdzanie, czy już istnieje podniesiony przedmiot i czy jakiś przycisk od podnoszenia konkretnego kształu jest wciśnięty i przesunięcie towaru do końca linki
+        //Podnoszenie towaru enterem, sprawdzanie, czy już istnieje podniesiony przedmiot, czy jakiś przycisk od podnoszenia konkretnego kształu jest wciśnięty i czy ma odpowiednią wage, przesunięcie towaru do końca linki
         case VK_RETURN:
             if(!podniesiony&&(czyJestTowar(lina.wspx,lina.wspy+lina.dlugosc)||czyJestTowar(lina.wspx,lina.wspy+lina.dlugosc)||czyJestTowar(lina.wspx,lina.wspy+lina.dlugosc)))
             {
