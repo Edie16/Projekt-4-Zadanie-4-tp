@@ -62,8 +62,7 @@ public:
     }
 };
 
-//klasa liny, nie wiem, czy jak obiekt jest tylko jeden, to nadal warto robić klasę, ale założyłem, że tak
-//ma współrzędne początku i długość oraz konstruktor i metodę rysowania liny
+//klasa liny, ma współrzędne początku i długość oraz konstruktor i metodę rysowania liny
 class Lina
 {
 public:
