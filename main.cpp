@@ -6,6 +6,7 @@
 #define UNICODE
 #endif
 
+
 //biblioteki
 #include <tchar.h>
 #include <windows.h>
@@ -18,12 +19,15 @@ using namespace Gdiplus;
 using namespace std;
 
 //Przyciski (3 do generowania kształtów i 3 do podnoszenia tylko danego kształtu)
-HWND g_hPrzyciskKolo;
-HWND g_hPrzyciskTrojkat;
-HWND g_hPrzyciskKwadrat;
-HWND g_hTylkoKwadrat;
-HWND g_hTylkoTrojkat;
-HWND g_hTylkoKolo;
+HWND PrzyciskKolo;
+HWND PrzyciskTrojkat;
+HWND PrzyciskKwadrat;
+HWND TylkoKwadrat;
+HWND TylkoTrojkat;
+HWND TylkoKolo;
+HWND Waga;
+
+int MaxWaga = 10;
 
 //klasa towarów, mają współrzędne, wagę, kształt (chyba się nie przyda) konstruktor i metody, każda rysuje konkretny kształt
 class Towary
@@ -87,7 +91,7 @@ vector<Towary> kola;
 vector<Towary> trojkaty;
 vector<Towary> kwadraty;
 
-//Tutaj sprawdzamy, czy współrzędne x i y znajdują się w odrębie jakiegoś kształtu
+//Funkcja, w której sprawdzamy, czy współrzędne x i y znajdują się w odrębie jakiegoś kształtu
 bool czyJestTowar (int x, int y)
 {
     for (const auto& kolo : kola)
@@ -198,12 +202,13 @@ int WINAPI WinMain (HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpsz
     ShowWindow (hwnd, nCmdShow);
 
     //Kontynuacja prrzycisków, są opisane cyframi
-    g_hPrzyciskKolo = CreateWindowEx( 0, "BUTTON", "Kolo", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 900, 200, 150, 30, hwnd, (HMENU)1, hThisInstance, NULL );
-    g_hPrzyciskTrojkat = CreateWindowEx( 0, "BUTTON", "Trojkat", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 900, 250, 150, 30, hwnd, (HMENU)2, hThisInstance, NULL );
-    g_hPrzyciskKwadrat = CreateWindowEx( 0, "BUTTON", "Kwadrat", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 900, 300, 150, 30, hwnd, (HMENU)3, hThisInstance, NULL );
-    g_hTylkoKolo = CreateWindow( "BUTTON", "Wieza tylko z kol",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 110, 30, 300, 30, hwnd, (HMENU)4, hThisInstance, NULL);
-    g_hTylkoTrojkat = CreateWindow( "BUTTON", "Wieza tylko z trojkatow",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 420, 30, 300, 30, hwnd, (HMENU)5, hThisInstance, NULL);
-    g_hTylkoKwadrat = CreateWindow( "BUTTON", "Wieza tylko z kwadratow",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 730, 30, 300, 30, hwnd, (HMENU)6, hThisInstance, NULL);
+    PrzyciskKolo = CreateWindowEx( 0, "BUTTON", "Kolo", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 900, 200, 150, 30, hwnd, (HMENU)1, hThisInstance, NULL );
+    PrzyciskTrojkat = CreateWindowEx( 0, "BUTTON", "Trojkat", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 900, 250, 150, 30, hwnd, (HMENU)2, hThisInstance, NULL );
+    PrzyciskKwadrat = CreateWindowEx( 0, "BUTTON", "Kwadrat", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 900, 300, 150, 30, hwnd, (HMENU)3, hThisInstance, NULL );
+    TylkoKolo = CreateWindow( "BUTTON", "Wieza tylko z kol",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 110, 30, 300, 30, hwnd, (HMENU)4, hThisInstance, NULL);
+    TylkoTrojkat = CreateWindow( "BUTTON", "Wieza tylko z trojkatow",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 420, 30, 300, 30, hwnd, (HMENU)5, hThisInstance, NULL);
+    TylkoKwadrat = CreateWindow( "BUTTON", "Wieza tylko z kwadratow",WS_CHILD | WS_VISIBLE |  BS_AUTOCHECKBOX | BS_PUSHLIKE, 730, 30, 300, 30, hwnd, (HMENU)6, hThisInstance, NULL);
+    Waga = CreateWindowEx(0, "EDIT", "Waga (usun i wpisz)", WS_CHILD | WS_VISIBLE | WS_BORDER, 900, 350, 150, 30, hwnd, (HMENU)7, hThisInstance, NULL);
 
 
     while (GetMessage (&messages, NULL, 0, 0))
@@ -341,44 +346,62 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
         {
         //Dodawanie kształtów i sprawdzanie, czy kształt może być dodany
         case 1:
+        {
+            char napis[6];
+            int waga = 10;
+            GetWindowText(Waga, napis, 6);
+            waga = atoi(napis);
             if (!czyJestTowar(500, 575)&&!podniesiony)
             {
-                kola.push_back(Towary(500, 575, 10, "kolo"));
+                kola.push_back(Towary(500, 575, waga, "kolo"));
                 InvalidateRect(hwnd, NULL, TRUE); //Odświerzanie
             }
             else
             {
                 MessageBox(hwnd, _T("Nie mozna dodac kolejnego kolka, cos juz jest w pozycji startowej lub dzwig podnosi inny towar (nie chcemy go przeciez rozpraszac)"), _T("No sorka"), MB_OK | MB_ICONWARNING);
             }
-            SendMessage(g_hPrzyciskKolo, BM_SETSTATE, FALSE, 0); //Program skupiał się na przycisku i nie pozwalał poruszać się linką
+            SendMessage(PrzyciskKolo, BM_SETSTATE, FALSE, 0); //Program skupiał się na przycisku i nie pozwalał poruszać się linką
             SetFocus(hwnd);
             break;
+        }
         case 2:
+        {
+            char napis[6];
+            int waga = 10;
+            GetWindowText(Waga, napis, 6);
+            waga = atoi(napis);
             if (!czyJestTowar(550, 575)&&!podniesiony)
             {
-                trojkaty.push_back(Towary(550, 575, 10, "trojkat"));
+                trojkaty.push_back(Towary(550, 575, waga, "trojkat"));
                 InvalidateRect(hwnd, NULL, TRUE);
             }
             else
             {
                 MessageBox(hwnd, _T("Nie mozna dodac kolejnego trojkata, cos juz jest w pozycji startowej lub dzwig podnosi inny towar (nie chcemy go przeciez rozpraszac)"), _T("No sorka"), MB_OK | MB_ICONWARNING);
             }
-            SendMessage(g_hPrzyciskTrojkat, BM_SETSTATE, FALSE, 0);
+            SendMessage(PrzyciskTrojkat, BM_SETSTATE, FALSE, 0);
             SetFocus(hwnd);
             break;
+        }
         case 3:
+        {
+            char napis[6];
+            int waga = 10;
+            GetWindowText(Waga, napis, 6);
+            waga = atoi(napis);
             if (!czyJestTowar(600, 575)&&!podniesiony)
             {
-                kwadraty.push_back(Towary(600, 575, 10, "kwadrat"));
+                kwadraty.push_back(Towary(600, 575, waga, "kwadrat"));
                 InvalidateRect(hwnd, NULL, TRUE);
             }
             else
             {
                 MessageBox(hwnd, _T("Nie mozna dodac kolejnego kwadratu, cos juz jest w pozycji startowej lub dzwig podnosi inny towar (nie chcemy go przeciez rozpraszac)"), _T("No sorka"), MB_OK | MB_ICONWARNING);
             }
-            SendMessage(g_hPrzyciskKwadrat, BM_SETSTATE, FALSE, 0);
+            SendMessage(PrzyciskKwadrat, BM_SETSTATE, FALSE, 0);
             SetFocus(hwnd);
             break;
+        }
         //Odznaczanie innych przycisków, clearowanie vectorów, żeby nie było innej wieży niż ta, która ma być
         case 4:
             CheckDlgButton(hwnd, 5, BST_UNCHECKED);
@@ -448,16 +471,33 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     podniesiony = znajdzKolo(lina.wspx, lina.wspy + lina.dlugosc);
                     if (!podniesiony) podniesiony = znajdzTrojkat(lina.wspx, lina.wspy + lina.dlugosc);
                     if (!podniesiony) podniesiony = znajdzKwadrat(lina.wspx, lina.wspy + lina.dlugosc);
-                    podniesiony->wspx = lina.wspx;
-                    podniesiony->wspy = lina.wspy + lina.dlugosc;
+                    if(podniesiony->waga<=MaxWaga)
+                    {
+                        podniesiony->wspx = lina.wspx;
+                        podniesiony->wspy = lina.wspy + lina.dlugosc;
+                    }
+                    else
+                    {
+                        MessageBox(hwnd, _T("Towar jest za ciezki, nie moge go podniesc!"), _T("No sorka"), MB_OK | MB_ICONWARNING);
+                        podniesiony = nullptr;
+                    }
+
                 }
                 if(IsDlgButtonChecked(hwnd, 4) == BST_CHECKED)
                 {
                     podniesiony = znajdzKolo(lina.wspx, lina.wspy + lina.dlugosc);
                     if(podniesiony)
                     {
-                        podniesiony->wspx = lina.wspx;
-                        podniesiony->wspy = lina.wspy + lina.dlugosc;
+                        if(podniesiony->waga<=MaxWaga)
+                        {
+                            podniesiony->wspx = lina.wspx;
+                            podniesiony->wspy = lina.wspy + lina.dlugosc;
+                        }
+                        else
+                        {
+                            MessageBox(hwnd, _T("To kolko jest za ciezkie, nie moge go podniesc!"), _T("No sorka"), MB_OK | MB_ICONWARNING);
+                            podniesiony = nullptr;
+                        }
                     }
                     else
                     {
@@ -469,8 +509,16 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     podniesiony = znajdzTrojkat(lina.wspx, lina.wspy + lina.dlugosc);
                     if(podniesiony)
                     {
-                        podniesiony->wspx = lina.wspx;
-                        podniesiony->wspy = lina.wspy + lina.dlugosc;
+                        if(podniesiony->waga<=MaxWaga)
+                        {
+                            podniesiony->wspx = lina.wspx;
+                            podniesiony->wspy = lina.wspy + lina.dlugosc;
+                        }
+                        else
+                        {
+                            MessageBox(hwnd, _T("Ten trojkat jest za ciezki, nie moge go podniesc!"), _T("No sorka"), MB_OK | MB_ICONWARNING);
+                            podniesiony = nullptr;
+                        }
                     }
                     else
                     {
@@ -482,8 +530,16 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     podniesiony = znajdzKwadrat(lina.wspx, lina.wspy + lina.dlugosc);
                     if(podniesiony)
                     {
-                        podniesiony->wspx = lina.wspx;
-                        podniesiony->wspy = lina.wspy + lina.dlugosc;
+                        if(podniesiony->waga<=MaxWaga)
+                        {
+                            podniesiony->wspx = lina.wspx;
+                            podniesiony->wspy = lina.wspy + lina.dlugosc;
+                        }
+                        else
+                        {
+                            MessageBox(hwnd, _T("Ten kwadrat jest za ciezki, nie moge go podniesc!"), _T("No sorka"), MB_OK | MB_ICONWARNING);
+                            podniesiony = nullptr;
+                        }
                     }
                     else
                     {
@@ -501,19 +557,56 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
                     podniesiony->wspy = 575;
                     podniesiony = nullptr;
                 }
-                else if(czyJestTowar(podniesiony->wspx,515)&&czyJestTowar(podniesiony->wspx,545)&&czyJestTowar(podniesiony->wspx,575))
+                else if(czyJestTowar(podniesiony->wspx,515))
                 {
                     MessageBox(hwnd, _T("Wieza jest juz duza"), _T("No sorka"), MB_OK | MB_ICONWARNING);
                 }
-                else if(czyJestTowar(podniesiony->wspx,545)&&czyJestTowar(podniesiony->wspx,575))
+                else if(czyJestTowar(podniesiony->wspx,545))
                 {
                     podniesiony->wspy = 515;
                     podniesiony = nullptr;
                 }
-                else if(czyJestTowar(podniesiony->wspx,575))
+                else if(czyJestTowar(podniesiony->wspx,575)&&IsDlgButtonChecked(hwnd, 4) == BST_UNCHECKED&&IsDlgButtonChecked(hwnd, 5) == BST_UNCHECKED&&IsDlgButtonChecked(hwnd, 6) == BST_UNCHECKED)
                 {
                     podniesiony->wspy = 545;
                     podniesiony = nullptr;
+                }
+                else if(czyJestTowar(podniesiony->wspx,575)&&IsDlgButtonChecked(hwnd, 4) == BST_CHECKED)
+                {
+                    if(znajdzKolo(podniesiony->wspx,575))
+                    {
+                        podniesiony->wspy = 545;
+                        podniesiony = nullptr;
+                    }
+                    else
+                    {
+                        MessageBox(hwnd, _T("Nie mozesz tutaj tego polozyc, to nie kolo"), _T("No sorka"), MB_OK | MB_ICONWARNING);
+                    }
+
+                }
+                else if(czyJestTowar(podniesiony->wspx,575)&&IsDlgButtonChecked(hwnd, 5) == BST_CHECKED)
+                {
+                    if(znajdzTrojkat(podniesiony->wspx,575))
+                    {
+                        podniesiony->wspy = 545;
+                        podniesiony = nullptr;
+                    }
+                    else
+                    {
+                        MessageBox(hwnd, _T("Nie mozesz tutaj tego polozyc, to nie trojkat"), _T("No sorka"), MB_OK | MB_ICONWARNING);
+                    }
+                }
+                else if(czyJestTowar(podniesiony->wspx,575)&&IsDlgButtonChecked(hwnd, 6) == BST_CHECKED)
+                {
+                    if(znajdzKwadrat(podniesiony->wspx,575))
+                    {
+                        podniesiony->wspy = 545;
+                        podniesiony = nullptr;
+                    }
+                    else
+                    {
+                        MessageBox(hwnd, _T("Nie mozesz tutaj tego polozyc, to nie kwadrat"), _T("No sorka"), MB_OK | MB_ICONWARNING);
+                    }
                 }
             }
             break;
